@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图书操作</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            background-color: #FFE4E1;  /* 淡粉色背景 */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #FFE4E1 0%, #F0F8FF 100%);
+        }
+        .container {
+            max-width: 800px;
+            background-color: #fff;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            padding: 40px;
+            margin: 50px auto;
+            border: 1px solid rgba(255,255,255,0.8);
+            backdrop-filter: blur(10px);
+        }
+        .btn-custom {
+            background-color: #FFB6C1;  /* 淡粉红色 */
+            color: #4A4A4A;
+            font-weight: 600;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 30px;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        .btn-custom:hover {
+            background-color: #FFC0CB;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255,182,193,0.4);
+        }
+        .book-info {
+            background-color: #E6E6FA;  /* 淡紫色 */
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            color: #4A4A4A;
+            border: 1px solid #F8F8FF;
+            transition: all 0.3s ease;
+        }
+        .book-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(230,230,250,0.6);
+        }
+        .operation-info {
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #B0E0E6;  /* 粉蓝色 */
+            border-radius: 12px;
+            color: #4A4A4A;
+            border: 1px solid #E0FFFF;
+            transition: all 0.3s ease;
+        }
+        .operation-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(176,224,230,0.4);
+        }
+        h2 {
+            color: #778899;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+        .form-control {
+            border-radius: 12px;
+            border: 2px solid #E6E6FA;
+            padding: 12px;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: #FFB6C1;
+            box-shadow: 0 0 0 0.2rem rgba(255,182,193,0.25);
+        }
+        .form-group label {
+            color: #5F9EA0;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .alert {
+            border-radius: 12px;
+            padding: 15px 20px;
+        }
+        .alert-danger {
+            background-color: #FFE4E1;
+            border-color: #FFB6C1;
+            color: #FF69B4;
+        }
+        .btn-secondary {
+            background-color: #B0C4DE;  /* 淡钢蓝 */
+            border: none;
+            border-radius: 25px;
+            padding: 10px 30px;
+            color: #4A4A4A;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background-color: #B0E0E6;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(176,196,222,0.4);
+        }
+        .query-section {
+            background-color: #FFF0F5;  /* 浅粉红色背景 */
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 1px solid #FFE4E1;
+            box-shadow: 0 8px 24px rgba(255,182,193,0.2);
+            transition: all 0.3s ease;
+        }
+        .query-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(255,182,193,0.3);
+        }
+        .text-warning {
+            color: #FFB6C1 !important;
+        }
+        .input-hint {
+            color: #778899;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            padding: 8px 12px;
+            background-color: #F0FFFF;
+            border-radius: 8px;
+            border-left: 3px solid #FFB6C1;
+        }
+        .form-section {
+            background-color: #FFF0F5;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        .form-section h5 {
+            color: #5F9EA0;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% if request.path.startswith('/procurement') %}
+            <h2 class="text-center mb-4 text-white">图书采购</h2>
+        {% elif request.path.startswith('/delete') %}
+            <h2 class="text-center mb-4 text-white">图书淘汰</h2>
+        {% elif request.path.startswith('/rent') %}
+            <h2 class="text-center mb-4 text-white">图书借阅</h2>
+        {% endif %}
+
+        {% if error %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endif %}
+        
+        <!-- 输入图书ID部分 -->
+        {% if not book %}
+        <div class="query-section mb-4">
+            <h4 class="text-center mb-3" style="color: #FF69B4;">请输入图书ID进行查询</h4>
+            <form method="GET" class="mb-4">
+                <div class="form-group">
+                    <label for="book_id" style="color: #FF69B4; font-weight: 600;">
+                        <i class="fas fa-search"></i> 图书ID：
+                    </label>
+                    <input type="text" class="form-control" id="book_id" name="book_id" required
+                           placeholder="请输入要查询的图书ID">
+                    <div class="input-hint">
+                        <i class="fas fa-info-circle"></i> 输入图书的唯一标识号进行查询
+                    </div>
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-custom">
+                            <i class="fas fa-search"></i> 查询图书
+                        </button>
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                            <i class="fas fa-home"></i> 返回首页
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- 显示书籍信息 -->
+        {% if book %}
+        <div class="book-info">
+            <h5>图书信息</h5>
+            <p><strong>书名：</strong> {{ book[1] if book[1] else 'N/A' }}</p>
+            <p><strong>作者：</strong> {{ book[4] if book[4] else '' }} {{ book[3] if book[3] else 'N/A' }}</p>
+            {% if request.path.startswith('/procurement') %}
+                <p><strong>采购记录：</strong></p>
+                {% for record in procurement_records %}
+                    <div class="operation-info">
+                        <p>采购数量：{{ record[2] if record[2] is not none else 'N/A' }}</p>
+                        <p>采购日期：{{ record[1] if record[1] is not none else 'N/A' }}</p>
+                    </div>
+                {% endfor %}
+            {% elif request.path.startswith('/delete') %}
+                <p><strong>淘汰记录：</strong></p>
+                {% for record in elimination_records %}
+                    <div class="operation-info">
+                        <p>淘汰数量：{{ record[2] if record[2] is not none else 'N/A' }}</p>
+                        <p>淘汰日期：{{ record[1] if record[1] is not none else 'N/A' }}</p>
+                    </div>
+                {% endfor %}
+            {% elif request.path.startswith('/rent') %}
+                <p><strong>借阅记录：</strong></p>
+                {% for record in rental_records %}
+                    <div class="operation-info">
+                        <p>借阅人ID：{{ record[1] if record[1] is not none else 'N/A' }}</p>
+                        <p>借出日期：{{ record[2] if record[2] is not none else 'N/A' }}</p>
+                        <p>归还日期：{{ record[3] if record[3] is not none else 'N/A' }}</p>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <!-- 操作表单 -->
+        <form method="POST" action="{{ request.path }}">
+            <input type="hidden" name="book_id" value="{{ book[0] if book else '' }}">
+            {% if request.path.startswith('/procurement') %}
+                <div class="form-section">
+                    <h5><i class="fas fa-shopping-cart"></i> 采购信息录入</h5>
+                    <div class="form-group">
+                        <label for="count">采购数量：</label>
+                        <input type="number" class="form-control" id="count" name="count" required min="1" 
+                               placeholder="请输入需要采购的数量">
+                        <div class="input-hint">
+                            <i class="fas fa-info-circle"></i> 请输入大于0的整数作为采购数量
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="datetime">采购日期：</label>
+                        <input type="date" class="form-control" id="datetime" name="datetime" required 
+                               value="{{ today_date if today_date else '' }}">
+                        <div class="input-hint">
+                            <i class="fas fa-calendar-alt"></i> 请选择或输入采购日期，格式为YYYY-MM-DD
+                        </div>
+                    </div>
+                </div>
+            {% elif request.path.startswith('/delete') %}
+                <div class="form-section">
+                    <h5><i class="fas fa-archive"></i> 淘汰信息录入</h5>
+                    <div class="form-group">
+                        <label for="count">淘汰数量：</label>
+                        <input type="number" class="form-control" id="count" name="count" required min="1"
+                               max="{{ book[9] if book else 0 }}" placeholder="请输入需要淘汰的数量">
+                        <div class="input-hint">
+                            <i class="fas fa-info-circle"></i> 当前可淘汰数量：{{ book[9] if book else 0 }}，请输入不超过此数量的正整数
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="datetime">淘汰日期：</label>
+                        <input type="date" class="form-control" id="datetime" name="datetime" required
+                               value="{{ today_date if today_date else '' }}">
+                        <div class="input-hint">
+                            <i class="fas fa-calendar-alt"></i> 请选择或输入淘汰日期，格式为YYYY-MM-DD
+                        </div>
+                    </div>
+                </div>
+            {% elif request.path.startswith('/rent') %}
+                <div class="form-section">
+                    <h5><i class="fas fa-book-reader"></i> 借阅信息录入</h5>
+                    <div class="form-group">
+                        <label for="user_id">借阅人ID：</label>
+                        <input type="text" class="form-control" id="user_id" name="user_id" required
+                               placeholder="请输入借阅人的ID">
+                        <div class="input-hint">
+                            <i class="fas fa-user"></i> 请输入有效的借阅人ID（学生证号或工号，5位字符）
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="rent_date">借出日期：</label>
+                        <input type="date" class="form-control" id="rent_date" name="rent_date" required
+                               value="{{ today_date if today_date else '' }}">
+                        <div class="input-hint">
+                            <i class="fas fa-calendar-alt"></i> 请选择或输入借出日期，格式为YYYY-MM-DD
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="return_date">预计归还日期：</label>
+                        <input type="date" class="form-control" id="return_date" name="return_date" required
+                               min="{{ today_date if today_date else '' }}">
+                        <div class="input-hint">
+                            <i class="fas fa-calendar-check"></i> 请选择或输入预计归还日期，必须晚于借出日期
+                        </div>
+                    </div>
+                    <div class="input-hint" style="background-color: #FFE4E1; border-left-color: #FFB6C1;">
+                        <i class="fas fa-info-circle"></i> 当前可借数量：{{ book[9] if book else 0 }}，请确保有足够的可借数量
+                    </div>
+                </div>
+            {% endif %}
+            
+            <div class="form-group text-center">
+                <button type="submit" class="btn btn-custom btn-lg">提交</button>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary btn-lg">返回首页</a>
+            </div>
+        </form>
+        {% endif %}
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
